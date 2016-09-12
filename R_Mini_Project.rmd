@@ -1,0 +1,110 @@
+---
+title: "R_Mini_Project"
+author: "Hennie Bezuidenhout"
+date: "06 September 2016"
+output: html_document
+---
+# Call packages to accomodate Project
+```{r}
+library(readr)
+library(tidyr)
+library(dplyr)
+library(lubridate)
+library(knitr)
+library(ggplot2)
+```
+# Append data files 
+```{r}
+eqs_frame <- list.files(path = "G:/Hennie/R Studio/Project Data/First R Project", full.names = TRUE) %>%
+  lapply(read_csv) %>%
+  bind_rows()
+
+```
+
+# Filter Data to return Top 20 Market Cap Stocks for each month
+```{r}
+Top20 <- eqs_frame %>%
+  group_by(date) %>%
+  arrange (desc(MarketCapUSD)) %>%
+  filter(!is.na(MarketCapUSD)) %>%
+  slice (1:20) %>%
+  ungroup() %>% 
+  select (date, Ticker, MarketCapUSD)
+
+```
+
+# Provide a Table to outline results for January
+```{r}
+Top20_Jan <- filter(Top20,date == "2016-01-31")
+kable(Top20_Jan, digits =1, caption = "Top 20 Market Cap Stocks: January")
+
+```
+# Calculating and outlining z-score for January
+```{r}
+zscore_eqs <- mutate(eqs_frame, z_score = (BookYield - (mean(eqs_frame$BookYield, na.rm = TRUE))/sd(eqs_frame$BookYield, na.rm = TRUE)))
+
+zscore_jan <- filter(zscore_eqs, date == "2016-01-31") %>%
+arrange(desc(z_score)) %>%
+select (date,Ticker, z_score) 
+kable(zscore_jan, digits = 2, caption = "All January Stocks ranked by Z-Score")
+
+```
+
+# Grouping Book Yield Z Score by month and filter to reveal Top 10 across the respective months
+```{r}
+zscore_group <- zscore_eqs %>%
+  group_by(date) %>%
+  arrange (desc(z_score)) %>%
+  filter(!is.na(z_score)) %>%
+  slice(1:10) %>%
+  select(date, Ticker, MarketCapUSD, EarningsYield, z_score)
+  kable (zscore_group, digits = 2, caption = "Monthly Top 10 z-score stocks")
+
+```
+
+# Calculate the Market Cap weighted weight across the 3 months (USD market caps used for entire data set)
+```{r}
+
+cap_weighted <- mutate(zscore_group,weight = MarketCapUSD/sum(eqs_frame$MarketCapUSD, na.rm = TRUE))
+
+```
+# Calculate the EarningsYield for each Cap-Weighted portfolio
+```{r}
+earnings_capweighted <- mutate(cap_weighted, ey_weights = EarningsYield * weight)
+```
+# Filter data set across months to calculate EY per month
+```{r}
+ey_jan <- filter(earnings_capweighted, date =="2016-01-31")
+summarise(ey_jan, jan_ey = sum(ey_weights))
+
+ey_feb <- filter(earnings_capweighted, date =="2016-02-29")
+summarise(ey_feb, feb_ey = sum(ey_weights))
+
+ey_mar <- filter(earnings_capweighted, date =="2016-03-31")
+summarise(ey_mar, mar_ey = sum(ey_weights))
+
+```
+# Plot Z_Scores for January: Bar Chart
+```{r}
+janeqs <- filter(zscore_eqs, date =="2016-01-31")
+ggplot(janeqs, aes(x = Ticker, y = z_score)) +
+  geom_bar(stat = "identity") +
+  theme(axis.text.x=element_blank(), 
+        axis.ticks.x=element_blank())
+
+```
+# Plot Earnings Yield for Cap Weighted Portfolio Stocks: Time-Series Chart
+```{r}
+
+ggplot(earnings_capweighted, aes(x = date, y = EarningsYield)) +
+  geom_line(aes(color = Ticker), size = 0.30, show.legend = FALSE)
+
+```
+
+
+
+
+
+
+
+
