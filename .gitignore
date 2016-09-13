@@ -1,1 +1,20 @@
-.Rproj.user/8C6C48AF/sdb/s-11D80186/lock_file
+# History files
+.Rhistory
+.Rapp.history
+
+# Example code in package build process
+*-Ex.R
+
+# RStudio files
+.Rproj.user/
+
+# produced vignettes
+vignettes/*.html
+vignettes/*.pdf
+.Rproj.user
+*.html
+*.pdf
+*.zip
+*.xls
+*.xlsm
+*.xlsx
