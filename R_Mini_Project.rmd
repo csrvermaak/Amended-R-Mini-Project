@@ -41,9 +41,13 @@ kable(Top20_Jan, digits =1, caption = "Top 20 Market Cap Stocks: January")
 ```
 # Calculating and outlining z-score for January
 ```{r}
-zscore_eqs <- mutate(eqs_frame, z_score = (BookYield - (mean(eqs_frame$BookYield, na.rm = TRUE))/sd(eqs_frame$BookYield, na.rm = TRUE)))
+zscore_eqs <- eqs_frame %>%
+group_by(date) %>%
+mutate (z_score = (BookYield - mean(BookYield, na.rm = TRUE))/sd(BookYield, na.rm = TRUE))
 
-zscore_jan <- filter(zscore_eqs, date == "2016-01-31") %>%
+
+zscore_jan <- zscore_eqs %>%
+filter(date == "2016-01-31") %>%
 arrange(desc(z_score)) %>%
 select (date,Ticker, z_score) 
 kable(zscore_jan, digits = 2, caption = "All January Stocks ranked by Z-Score")
@@ -57,6 +61,7 @@ zscore_group <- zscore_eqs %>%
   arrange (desc(z_score)) %>%
   filter(!is.na(z_score)) %>%
   slice(1:10) %>%
+  ungroup() %>%
   select(date, Ticker, MarketCapUSD, EarningsYield, z_score)
   kable (zscore_group, digits = 2, caption = "Monthly Top 10 z-score stocks")
 
@@ -65,12 +70,16 @@ zscore_group <- zscore_eqs %>%
 # Calculate the Market Cap weighted weight across the 3 months (USD market caps used for entire data set)
 ```{r}
 
-cap_weighted <- mutate(zscore_group,weight = MarketCapUSD/sum(eqs_frame$MarketCapUSD, na.rm = TRUE))
+cap_weighted <- zscore_group %>%
+  group_by(date) %>%
+  mutate(weight = MarketCapUSD/sum(eqs_frame$MarketCapUSD, na.rm = TRUE)) %>%
+  ungroup()
 
 ```
 # Calculate the EarningsYield for each Cap-Weighted portfolio
 ```{r}
-earnings_capweighted <- mutate(cap_weighted, ey_weights = EarningsYield * weight)
+earnings_capweighted <- cap_weighted %>%
+  mutate(ey_weights = EarningsYield * weight)
 ```
 # Filter data set across months to calculate EY per month
 ```{r}
