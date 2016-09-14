@@ -72,7 +72,7 @@ zscore_group <- zscore_eqs %>%
 
 cap_weighted <- eqs_frame %>%
   group_by(date) %>%
-  mutate(weight = MarketCapUSD/sum(MarketCapUSD, na.rm = TRUE)) %>%
+  mutate(weight = MarketCapUSD/sum(MarketCapUSD)) %>%
   ungroup()
 
 ```
@@ -80,7 +80,7 @@ cap_weighted <- eqs_frame %>%
 ```{r}
 earnings_capweighted <- cap_weighted %>%
   group_by(date) %>%
-  mutate(ey_weights = EarningsYield * weight, na.rm = TRUE) %>%
+  mutate(ey_weights = EarningsYield * weight) %>%
   ungroup()
 ```
 # Filter data set across months to calculate EY per month
