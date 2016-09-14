@@ -72,7 +72,7 @@ zscore_group <- zscore_eqs %>%
 
 cap_weighted <- eqs_frame %>%
   group_by(date) %>%
-  mutate(weight = MarketCapUSD/sum(MarketCapUSD)) %>%
+  mutate(weight = MarketCapUSD/sum(MarketCapUSD, na.rm = TRUE)) %>%
   ungroup()
 
 ```
