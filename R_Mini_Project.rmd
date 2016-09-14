@@ -70,27 +70,29 @@ zscore_group <- zscore_eqs %>%
 # Calculate the Market Cap weighted weight across the 3 months (USD market caps used for entire data set)
 ```{r}
 
-cap_weighted <- zscore_group %>%
+cap_weighted <- eqs_frame %>%
   group_by(date) %>%
-  mutate(weight = MarketCapUSD/sum(eqs_frame$MarketCapUSD, na.rm = TRUE)) %>%
+  mutate(weight = MarketCapUSD/sum(MarketCapUSD, na.rm = TRUE)) %>%
   ungroup()
 
 ```
 # Calculate the EarningsYield for each Cap-Weighted portfolio
 ```{r}
 earnings_capweighted <- cap_weighted %>%
-  mutate(ey_weights = EarningsYield * weight)
+  group_by(date) %>%
+  mutate(ey_weights = EarningsYield * weight, na.rm = TRUE) %>%
+  ungroup()
 ```
 # Filter data set across months to calculate EY per month
 ```{r}
 ey_jan <- filter(earnings_capweighted, date =="2016-01-31")
-summarise(ey_jan, jan_ey = sum(ey_weights))
+summarise(ey_jan, jan_ey = sum(ey_weights, na.rm = TRUE))
 
 ey_feb <- filter(earnings_capweighted, date =="2016-02-29")
-summarise(ey_feb, feb_ey = sum(ey_weights))
+summarise(ey_feb, feb_ey = sum(ey_weights, na.rm = TRUE))
 
 ey_mar <- filter(earnings_capweighted, date =="2016-03-31")
-summarise(ey_mar, mar_ey = sum(ey_weights))
+summarise(ey_mar, mar_ey = sum(ey_weights, na.rm = TRUE))
 
 ```
 # Plot Z_Scores for January: Bar Chart
