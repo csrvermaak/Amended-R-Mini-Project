@@ -112,7 +112,18 @@ ggplot(earnings_capweighted, aes(x = date, y = EarningsYield)) +
 
 ```
 
+# Time Series Chart for Earnings Yield at a Portfolio Level
 
+```{r}
+timeseries_ey <- earnings_capweighted %>%
+  group_by(date) %>%
+  mutate(portfolio_ey = sum(ey_weights, na.rm = TRUE)) %>%
+  ungroup()
+
+ggplot(timeseries_ey, aes(x = date, y = portfolio_ey)) +
+  geom_line(size = 0.30, show.legend = FALSE)
+
+```
 
 
 
